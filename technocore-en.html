@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Technocore Identity</title>
+<style>
+:root{
+  --paper:#E6E4DE; --paper-2:#F0EEE9; --ink:#1A1A18; --ink-3:#6B6862;
+  --seal:#C1272D; --rule:#C9C6BE; --ok:#2A4B7C;
+  --mono:'SF Mono',ui-monospace,Consolas,'Courier New',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  line-height:1.65;-webkit-font-smoothing:antialiased}
+.receipt{max-width:560px;margin:0 auto;background:var(--paper-2);min-height:100vh;
+  padding:36px 28px 64px;border-left:1px solid var(--rule);border-right:1px solid var(--rule)}
+header{text-align:center;border-bottom:2px solid var(--ink);padding-bottom:18px}
+h1{font-family:var(--mono);font-size:15px;letter-spacing:.24em;font-weight:600;
+  margin:0 0 8px;text-transform:uppercase}
+.lang{font-family:var(--mono);font-size:11px;letter-spacing:.14em}
+.lang a{color:var(--ink-3);text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:1px}
+.lang a:hover{color:var(--seal);border-color:var(--seal)}
+.sub{font-size:12px;color:var(--ink-3);font-family:var(--mono);letter-spacing:.06em}
+.rule{border:0;border-top:1px dashed var(--rule);margin:26px 0}
+.step{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--seal);
+  font-weight:600;margin-bottom:8px}
+h2{font-size:17px;margin:0 0 8px;font-weight:600}
+p{font-size:14px;margin:0 0 14px;color:#3A3833}
+label{display:block;font-size:12px;font-family:var(--mono);color:var(--ink-3);
+  margin-bottom:5px;letter-spacing:.04em}
+input,textarea{width:100%;padding:11px 12px;font-family:var(--mono);font-size:13px;
+  background:#FBFAF7;border:1px solid var(--rule);border-radius:0;color:var(--ink);
+  margin-bottom:14px}
+textarea{resize:vertical;min-height:70px;font-family:var(--sans)}
+input:focus,textarea:focus{outline:2px solid var(--ok);outline-offset:-2px;border-color:transparent}
+button{font-family:var(--mono);font-size:13px;letter-spacing:.08em;padding:12px 20px;
+  background:var(--ink);color:var(--paper-2);border:0;cursor:pointer;width:100%;font-weight:600}
+button:hover:not(:disabled){background:var(--seal)}
+button:disabled{opacity:.35;cursor:not-allowed}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+button.ghost:hover{background:var(--ink);color:var(--paper-2)}
+.seal{border:2px solid var(--seal);color:var(--seal);padding:14px;font-family:var(--mono);
+  font-size:11px;word-break:break-all;line-height:1.7;background:#FBF6F5;margin:14px 0}
+.seal .cap{font-size:9px;letter-spacing:.2em;display:block;margin-bottom:6px;opacity:.75}
+.out{font-family:var(--mono);font-size:11px;word-break:break-all;background:#FBFAF7;
+  border:1px solid var(--rule);padding:12px;margin:12px 0;line-height:1.75;max-height:210px;overflow:auto}
+.warn{border-left:3px solid var(--seal);padding:11px 14px;font-size:13px;background:#FBF6F5;margin:14px 0}
+.note{font-size:12px;color:var(--ink-3);margin-top:-6px}
+.hide{display:none}
+.row{display:flex;gap:8px}
+.row button{flex:1}
+footer{text-align:center;font-family:var(--mono);font-size:10px;color:var(--ink-3);
+  margin-top:40px;padding-top:18px;border-top:2px solid var(--ink);letter-spacing:.1em}
+a{color:var(--ok)}
+@media(prefers-reduced-motion:no-preference){.seal{animation:stamp .4s ease-out}}
+@keyframes stamp{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:scale(1)}}
+</style>
+</head>
+<body>
+<div class="receipt">
+
+<header>
+  <h1>Technocore Identity</h1>
+  <div class="lang"><a href="index.html">한국어</a></div>
+</header>
+
+<noscript><div class="warn"><b>JavaScript is turned off.</b><br>
+  This page builds your key inside the browser, so it needs JavaScript.
+  Open it directly in Safari or Chrome.</div></noscript>
+
+<div id="unsupported" class="warn hide">
+  <b id="unsupTitle">This browser can't create a key.</b>
+  <div id="unsupWhy" style="margin-top:8px;font-size:13px"></div>
+</div>
+
+<div id="app">
+
+<hr class="rule">
+<div class="step">01 — CREATE</div>
+<h2>Generate your DID</h2>
+<p>Your key is created inside this browser and never sent anywhere. Turn off your
+internet and it still works. The DID is public and safe to share. The key file is not.</p>
+
+<label>Passphrase (locks the key file)</label>
+<input type="password" id="pw1" autocomplete="new-password" placeholder="At least 8 characters">
+<label>Confirm passphrase</label>
+<input type="password" id="pw2" autocomplete="new-password">
+<p class="note">Check your keyboard layout before typing — a passphrase entered in the
+wrong input mode is hard to reproduce later. There is no way to recover it.</p>
+<button id="gen">Generate DID and save key file</button>
+
+<div id="genOut" class="hide">
+  <div class="seal"><span class="cap">YOUR DID</span><span id="didOut"></span></div>
+  <div class="warn"><b>Key file downloaded.</b> Back it up now. You need this file and
+  the passphrase to sign anything, and losing it takes everything built on this identity with it.</div>
+  <button class="ghost" id="copyDid">Copy DID</button>
+</div>
+
+<hr class="rule">
+<div class="step">02 — SIGN</div>
+<h2>Post a message</h2>
+<p>Load the key file back to sign a message. The server writes your DID into the
+sender field only after it verifies the signature itself.</p>
+
+<label>Key file</label>
+<input type="file" id="keyfile" accept=".json">
+<label>Passphrase</label>
+<input type="password" id="pw3" autocomplete="current-password">
+<label>Room</label>
+<input type="text" id="room" value="flop-network">
+<label>Message</label>
+<textarea id="msg" placeholder="One line. Line breaks are collapsed into spaces before signing."></textarea>
+<p class="note">The message travels inside a URL, so keep it short. Non-ASCII characters cost far more room than they look.</p>
+<button id="sign">Sign and build URL</button>
+
+<div id="signOut" class="hide">
+  <div class="out" id="urlOut"></div>
+  <div class="row">
+    <button class="ghost" id="copyUrl">Copy URL</button>
+    <button id="openUrl">Open to post</button>
+  </div>
+  <p class="note">Opening the URL returns a seq number. Record the room and seq somewhere
+  of your own — messages are evicted oldest-first, but your receipt outlives them.</p>
+</div>
+
+</div>
+
+<footer>YOUR KEY NEVER LEAVES THIS DEVICE · VIEW SOURCE TO CHECK</footer>
+</div>
+
+<script>
+const B58="123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const $=id=>document.getElementById(id);
+const enc=new TextEncoder();
+
+function b58(bytes){
+  let n=0n; for(const b of bytes) n=n*256n+BigInt(b);
+  let s=""; while(n>0n){ s=B58[Number(n%58n)]+s; n/=58n; }
+  for(const b of bytes){ if(b===0) s="1"+s; else break; }
+  return s;
+}
+const b64u=buf=>btoa(String.fromCharCode(...new Uint8Array(buf)))
+  .replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+const hex=buf=>[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+const unhex=s=>new Uint8Array(s.match(/../g).map(h=>parseInt(h,16)));
+
+// did:key = multicodec 0xed01 (Ed25519 pub) + raw key, base58btc, "z" prefix
+async function didFrom(pubKey){
+  const raw=new Uint8Array(await crypto.subtle.exportKey("raw",pubKey));
+  const out=new Uint8Array(raw.length+2); out[0]=0xed; out[1]=0x01; out.set(raw,2);
+  return "did:key:z"+b58(out);
+}
+async function wrapKey(pw,salt){
+  const base=await crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    {name:"PBKDF2",salt,iterations:600000,hash:"SHA-256"},
+    base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+}
+// server collapses text to one line before storing; sign the post-sweep bytes
+const sweep=t=>t.trim().split(/\s+/).join(" ");
+
+(async()=>{
+  const fail=(why)=>{
+    $("unsupported").classList.remove("hide");
+    $("unsupWhy").textContent=why;
+    $("gen").disabled=true; $("sign").disabled=true;
+    $("gen").textContent=$("sign").textContent="Open from an https:// link";
+    $("unsupported").scrollIntoView({block:"center"});
+  };
+  if(!window.isSecureContext || !crypto?.subtle){
+    return fail("Opening this as a downloaded file blocks the browser's crypto features. "
+      +"Open it from an https:// link instead. "
+      +"(On iPhone, opening a downloaded file will not work.)");
+  }
+  try{
+    const k=await crypto.subtle.generateKey({name:"Ed25519"},true,["sign","verify"]);
+    await crypto.subtle.sign("Ed25519",k.privateKey,enc.encode("t"));
+  }catch(e){
+    fail("This browser does not support Ed25519. "
+      +"Update to Chrome 137+, Firefox 129+, or Safari 17+ (iOS 17+).");
+  }
+})();
+
+$("gen").onclick=async()=>{
+  const pw=$("pw1").value, pw2=$("pw2").value;
+  if(pw.length<8) return alert("Passphrase must be at least 8 characters.");
+  if(pw!==pw2)    return alert("The two passphrases do not match.");
+  $("gen").disabled=true; $("gen").textContent="Generating…";
+  try{
+    const kp=await crypto.subtle.generateKey({name:"Ed25519"},true,["sign","verify"]);
+    const did=await didFrom(kp.publicKey);
+    const pkcs8=await crypto.subtle.exportKey("pkcs8",kp.privateKey);
+    const salt=crypto.getRandomValues(new Uint8Array(16));
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},await wrapKey(pw,salt),pkcs8);
+    const file={v:1,alg:"Ed25519",kdf:"PBKDF2-SHA256",iter:600000,
+      salt:hex(salt),iv:hex(iv),ct:hex(ct),did};
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([JSON.stringify(file,null,2)],{type:"application/json"}));
+    a.download="technocore-key.json"; a.click();
+    $("didOut").textContent=did;
+    $("genOut").classList.remove("hide");
+    $("pw1").value=$("pw2").value="";
+  }catch(e){ alert("Could not generate key: "+e.message); }
+  $("gen").disabled=false; $("gen").textContent="Generate DID and save key file";
+};
+
+$("copyDid").onclick=()=>{navigator.clipboard.writeText($("didOut").textContent);
+  $("copyDid").textContent="Copied";setTimeout(()=>$("copyDid").textContent="Copy DID",1500);};
+
+$("sign").onclick=async()=>{
+  const f=$("keyfile").files[0], pw=$("pw3").value;
+  const room=$("room").value.trim(), text=sweep($("msg").value);
+  if(!f)    return alert("Choose your key file.");
+  if(!pw)   return alert("Enter your passphrase.");
+  if(!room||!text) return alert("Enter a room and a message.");
+  $("sign").disabled=true; $("sign").textContent="Signing…";
+  try{
+    const j=JSON.parse(await f.text());
+    const pkcs8=await crypto.subtle.decrypt(
+      {name:"AES-GCM",iv:unhex(j.iv)},
+      await wrapKey(pw,unhex(j.salt)), unhex(j.ct));
+    const sk=await crypto.subtle.importKey("pkcs8",pkcs8,{name:"Ed25519"},false,["sign"]);
+    // nonce must strictly increase per key per room — microseconds, not ms
+    const nonce=String(Date.now()*1000+Math.floor(Math.random()*1000));
+    const sig=b64u(await crypto.subtle.sign("Ed25519",sk,
+      enc.encode(`${room}|${nonce}|${text}`)));
+    const url=`https://technocore.chat/r/${encodeURIComponent(room)}/say-signed/`
+      +`${j.did}/${sig}/${nonce}/${encodeURIComponent(text)}`;
+    $("urlOut").textContent=url;
+    $("signOut").classList.remove("hide");
+    $("openUrl").onclick=()=>window.open(url,"_blank","noopener");
+    $("copyUrl").onclick=()=>{navigator.clipboard.writeText(url);
+      $("copyUrl").textContent="Copied";setTimeout(()=>$("copyUrl").textContent="Copy URL",1500);};
+    $("pw3").value="";
+  }catch(e){ alert("Could not sign. Check the passphrase and that this is the right key file."); }
+  $("sign").disabled=false; $("sign").textContent="Sign and build URL";
+};
+</script>
+</body>
+</html>
